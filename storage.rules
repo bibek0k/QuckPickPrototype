@@ -1,0 +1,28 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Driver documents - can be viewed by driver and admins only
+    match /driver_documents/{driverId}/{document} {
+      allow read: if request.auth != null &&
+                     (request.auth.uid == driverId ||
+                      firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow write: if request.auth != null && request.auth.uid == driverId;
+      allow delete: if false; // Documents never deleted, only superseded
+    }
+
+    // Delivery proof photos - readable by all authenticated users
+    match /delivery_proofs/{deliveryId}/{file} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+      allow delete: if false;
+    }
+
+    // Profile photos - public read, owner write
+    match /profile_photos/{userId}/{file} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
