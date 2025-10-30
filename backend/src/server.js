@@ -30,8 +30,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes (will be added in subsequent steps)
-// app.use('/api/auth', require('./routes/auth'));
+// API Routes
+app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/rides', require('./routes/rides'));
 // app.use('/api/deliveries', require('./routes/deliveries'));
 // app.use('/api/drivers', require('./routes/drivers'));
