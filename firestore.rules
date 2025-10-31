@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isDriver() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'driver';
+    }
+
+    function isVerifiedDriver() {
+      return isDriver() &&
+             get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.verified == true;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isUser(userId) || isAdmin();
+      allow create: if isAuthenticated() && isUser(userId);
+      allow update: if isUser(userId) || isAdmin();
+      allow delete: if false; // Soft delete only
+    }
+
+    // Drivers collection
+    match /drivers/{driverId} {
+      allow read: if isAuthenticated(); // Any user can see driver profiles
+      allow create: if isAuthenticated() && isUser(driverId);
+      allow update: if isUser(driverId) || isAdmin();
+      allow delete: if false;
+
+      // Only admins can update verification status
+      allow update: if isAdmin() &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verified', 'verificationStatus', 'rejectionReason']);
+    }
+
+    // Rides collection
+    match /rides/{rideId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.userId == request.auth.uid ||
+                      resource.data.driverId == request.auth.uid ||
+                      isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+                      (resource.data.userId == request.auth.uid ||
+                       resource.data.driverId == request.auth.uid ||
+                       isAdmin());
+      allow delete: if false; // Never delete rides
+    }
+
+    // Deliveries collection
+    match /deliveries/{deliveryId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.senderId == request.auth.uid ||
+                      resource.data.receiverId == request.auth.uid ||
+                      resource.data.driverId == request.auth.uid ||
+                      isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+                      (resource.data.senderId == request.auth.uid ||
+                       resource.data.driverId == request.auth.uid ||
+                       isAdmin());
+      allow delete: if false;
+    }
+
+    // Cancellations collection
+    match /cancellations/{cancellationId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.userId == request.auth.uid ||
+                      resource.data.driverId == request.auth.uid ||
+                      isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin(); // Only admins can waive fees
+      allow delete: if false;
+    }
+
+    // Payments collection
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() &&
+                     (resource.data.userId == request.auth.uid ||
+                      resource.data.driverId == request.auth.uid ||
+                      isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin(); // Only backend/admin can update payment status
+      allow delete: if false;
+    }
+
+    // Logs collection (append-only for audit)
+    match /logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if false; // Immutable
+      allow delete: if false;
+    }
+
+    // Verifications collection
+    match /verifications/{verificationId} {
+      allow read: if isAdmin() ||
+                     (isDriver() && resource.data.driverId == request.auth.uid);
+      allow create: if isAdmin();
+      allow update: if false; // Immutable audit trail
+      allow delete: if false;
+    }
+
+    // SOS Alerts collection
+    match /sos_alerts/{alertId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+  }
+}
