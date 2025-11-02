@@ -50,43 +50,36 @@ const ProfileEditScreen = ({ navigation }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handlePickImage = async () => {
-    try {
-      // Request permission for camera roll
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: 'Storage Permission Required',
-            message: 'This app needs access to your photos to update profile picture',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Permission Denied', 'Storage permission is required to select photos');
-          return;
-        }
+  const handlePickImage = () => {
+    const options = {
+      mediaType: 'photo',
+      includeBase64: false,
+      maxHeight: 300,
+      maxWidth: 300,
+      quality: 0.7,
+    };
+
+    launchImageLibrary(options, (response) => {
+      // Handle user cancellation
+      if (response.didCancel) {
+        return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.7,
-      });
+      // Handle errors
+      if (response.error) {
+        console.error('ImagePicker Error: ', response.error);
+        Alert.alert('Error', 'Failed to pick image');
+        return;
+      }
 
-      if (!result.canceled) {
+      // Handle successful selection
+      if (response.assets && response.assets[0]) {
         setFormData({
           ...formData,
-          profilePhoto: result.assets[0].uri,
+          profilePhoto: response.assets[0].uri,
         });
       }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image');
-    }
+    });
   };
 
   const handleSave = async () => {
