@@ -3,15 +3,22 @@
  * Main screen with dual tabs for Quick Ride and Quick Pickup Express
  */
 
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  TextInput,
+  Alert,
+  PermissionsAndroid,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MapView, {Marker, Polyline, PROVIDER_GOOGLE} from 'react-native-maps';
 import {useAuth} from '../../context/AuthContext';
 
 const {width} = Dimensions.get('window');
