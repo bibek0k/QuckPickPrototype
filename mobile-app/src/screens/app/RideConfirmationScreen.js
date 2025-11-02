@@ -194,24 +194,31 @@ const RideConfirmationScreen = ({ route, navigation }) => {
         {/* Fare Breakdown */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Fare Breakdown</Text>
-          <View style={styles.fareBreakdown}>
-            <View style={styles.fareRow}>
-              <Text style={styles.fareLabel}>Base Fare</Text>
-              <Text style={styles.fareValue}>₹{selectedFare.baseFare}</Text>
+          {fareLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#FF6B35" />
+              <Text style={styles.loadingText}>Calculating fare...</Text>
             </View>
-            <View style={styles.fareRow}>
-              <Text style={styles.fareLabel}>Distance Fare ({distance} km)</Text>
-              <Text style={styles.fareValue}>₹{selectedFare.distanceFare}</Text>
+          ) : (
+            <View style={styles.fareBreakdown}>
+              <View style={styles.fareRow}>
+                <Text style={styles.fareLabel}>Base Fare</Text>
+                <Text style={styles.fareValue}>₹{selectedFare.baseFare}</Text>
+              </View>
+              <View style={styles.fareRow}>
+                <Text style={styles.fareLabel}>Distance Fare ({distance} km)</Text>
+                <Text style={styles.fareValue}>₹{selectedFare.distanceFare}</Text>
+              </View>
+              <View style={styles.fareRow}>
+                <Text style={styles.fareLabel}>Time Fare ({estimatedTime} min)</Text>
+                <Text style={styles.fareValue}>₹{selectedFare.timeFare}</Text>
+              </View>
+              <View style={[styles.fareRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Total Fare</Text>
+                <Text style={styles.totalValue}>₹{selectedFare.total}</Text>
+              </View>
             </View>
-            <View style={styles.fareRow}>
-              <Text style={styles.fareLabel}>Time Fare ({estimatedTime} min)</Text>
-              <Text style={styles.fareValue}>₹{selectedFare.timeFare}</Text>
-            </View>
-            <View style={[styles.fareRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Fare</Text>
-              <Text style={styles.totalValue}>₹{selectedFare.total}</Text>
-            </View>
-          </View>
+          )}
         </View>
 
         {/* Payment Method */}
