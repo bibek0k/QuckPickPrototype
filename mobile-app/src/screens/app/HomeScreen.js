@@ -23,9 +23,139 @@ import {useAuth} from '../../context/AuthContext';
 
 const {width} = Dimensions.get('window');
 
-const HomeScreen = () => {
+const HomeScreen = ({navigation}) => {
   const [activeTab, setActiveTab] = useState('ride');
   const {user} = useAuth();
+  const [userLocation, setUserLocation] = useState(null);
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [destinationLocation, setDestinationLocation] = useState('');
+  const [pickupCoords, setPickupCoords] = useState(null);
+  const [destinationCoords, setDestinationCoords] = useState(null);
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 28.6139, // Default: Delhi
+    longitude: 77.2090,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const mapRef = useRef(null);
+
+  // Request location permission and get current location
+  useEffect(() => {
+    requestLocationPermission();
+  }, []);
+
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Access Required',
+            message: 'This app needs to access your location for ride booking',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          getCurrentLocation();
+        } else {
+          Alert.alert('Permission Denied', 'Location permission is required for this feature');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+  };
+
+  const getCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const {latitude, longitude} = position.coords;
+        const newLocation = {
+          latitude,
+          longitude,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        };
+        setUserLocation(newLocation);
+        setMapRegion(newLocation);
+        setPickupLocation('Current Location');
+        setPickupCoords({latitude, longitude});
+
+        // Animate map to user location
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(newLocation, 1000);
+        }
+      },
+      error => {
+        console.error('Error getting location:', error);
+        Alert.alert('Error', 'Could not get your current location');
+      },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+    );
+  };
+
+  const handleMapPress = (e) => {
+    const {coordinate} = e.nativeEvent;
+
+    if (!destinationCoords) {
+      // Set destination if pickup is already set
+      setDestinationCoords(coordinate);
+      setDestinationLocation(`${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+      // Could integrate Google Places API here for address lookup
+    } else {
+      // Reset and set new pickup
+      setPickupCoords(coordinate);
+      setPickupLocation(`${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+      setDestinationCoords(null);
+      setDestinationLocation('');
+      setRouteCoordinates([]);
+    }
+  };
+
+  const handleBookNow = () => {
+    if (!pickupCoords || !destinationCoords) {
+      Alert.alert('Missing Information', 'Please set both pickup and destination locations');
+      return;
+    }
+
+    if (activeTab === 'ride') {
+      navigation.navigate('RideConfirmation', {
+        pickup: {
+          address: pickupLocation,
+          latitude: pickupCoords.latitude,
+          longitude: pickupCoords.longitude,
+        },
+        destination: {
+          address: destinationLocation,
+          latitude: destinationCoords.latitude,
+          longitude: destinationCoords.longitude,
+        },
+      });
+    } else {
+      // Handle delivery booking
+      Alert.alert('Delivery', 'Delivery booking flow coming soon');
+    }
+  };
+
+  const centerMapOnUser = () => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion(userLocation, 1000);
+    } else {
+      getCurrentLocation();
+    }
+  };
+
+  // Update route when both locations are set
+  useEffect(() => {
+    if (pickupCoords && destinationCoords) {
+      // This would integrate with Google Directions API in production
+      // For now, create a simple straight line
+      setRouteCoordinates([pickupCoords, destinationCoords]);
+    }
+  }, [pickupCoords, destinationCoords]);
 
   return (
     <View style={styles.container}>
