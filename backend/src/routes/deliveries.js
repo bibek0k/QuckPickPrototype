@@ -638,6 +638,40 @@ router.put('/:id/cancel', authenticate, async (req, res, next) => {
 });
 
 /**
+ * GET /api/deliveries/my-history
+ * Get user's completed delivery history
+ */
+router.get('/my-history', authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.uid;
+
+    const deliveriesRef = db.collection('deliveries');
+    const snapshot = await deliveriesRef
+      .where('senderId', '==', userId)
+      .where('status', 'in', ['completed', 'cancelled'])
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const deliveries = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate()
+    }));
+
+    res.status(200).json({
+      success: true,
+      deliveries
+    });
+  } catch (error) {
+    logger.error('Error fetching delivery history:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch delivery history'
+    });
+  }
+});
+
+/**
  * Helper function to calculate distance between two coordinates
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
