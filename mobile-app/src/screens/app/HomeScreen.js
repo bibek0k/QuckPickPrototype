@@ -207,23 +207,122 @@ const HomeScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      {/* Content Area - Map will go here in Phase 2 */}
+      {/* Map Content Area */}
       <View style={styles.content}>
-        <View style={styles.placeholderContainer}>
-          <Icon
-            name={activeTab === 'ride' ? 'map-marker' : 'package-variant'}
-            size={80}
-            color="#E0E0E0"
-          />
-          <Text style={styles.placeholderText}>
-            {activeTab === 'ride'
-              ? 'Ride booking coming soon!'
-              : 'Delivery service coming soon!'}
-          </Text>
-          <Text style={styles.placeholderSubtext}>
-            Map view and booking functionality will be added in Phase 2
-          </Text>
-        </View>
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
+          {/* Location Inputs */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputRow}>
+              <Icon name="map-marker" size={20} color="#4CAF50" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter pickup location"
+                value={pickupLocation}
+                onChangeText={setPickupLocation}
+                editable={false} // Will be set via map tap
+              />
+            </View>
+
+            <View style={[styles.inputRow, styles.destinationInput]}>
+              <Icon name="map-marker" size={20} color="#FF6B35" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Enter destination"
+                value={destinationLocation}
+                onChangeText={setDestinationLocation}
+                editable={false} // Will be set via map tap
+              />
+            </View>
+          </View>
+
+          {/* Map View */}
+          <View style={styles.mapContainer}>
+            <MapView
+              ref={mapRef}
+              style={styles.map}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={mapRegion}
+              onPress={handleMapPress}
+              showsUserLocation={true}
+              showsMyLocationButton={false}
+              showsCompass={true}
+              showsScale={true}
+              loadingEnabled={true}
+            >
+              {/* Pickup Marker */}
+              {pickupCoords && (
+                <Marker
+                  coordinate={pickupCoords}
+                  title="Pickup"
+                  description={pickupLocation}
+                  pinColor="#4CAF50"
+                />
+              )}
+
+              {/* Destination Marker */}
+              {destinationCoords && (
+                <Marker
+                  coordinate={destinationCoords}
+                  title="Destination"
+                  description={destinationLocation}
+                  pinColor="#FF6B35"
+                />
+              )}
+
+              {/* Route Line */}
+              {routeCoordinates.length > 1 && (
+                <Polyline
+                  coordinates={routeCoordinates}
+                  strokeColor="#FF6B35"
+                  strokeWidth={3}
+                  lineDashPattern={[10, 5]}
+                />
+              )}
+            </MapView>
+
+            {/* Map Controls */}
+            <TouchableOpacity style={styles.locationButton} onPress={centerMapOnUser}>
+              <Icon name="crosshairs-gps" size={24} color="#FF6B35" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Book Now Button */}
+          {pickupCoords && destinationCoords && (
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.bookButton}
+                onPress={handleBookNow}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.bookButtonText}>
+                  {activeTab === 'ride' ? 'Book Ride' : 'Send Package'}
+                </Text>
+                <Icon
+                  name={activeTab === 'ride' ? 'car' : 'package-variant'}
+                  size={20}
+                  color="#FFFFFF"
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Instructions */}
+          {!pickupCoords && !destinationCoords && (
+            <View style={styles.instructionsContainer}>
+              <Text style={styles.instructionsText}>
+                Tap on the map to set pickup location
+              </Text>
+            </View>
+          )}
+
+          {pickupCoords && !destinationCoords && (
+            <View style={styles.instructionsContainer}>
+              <Text style={styles.instructionsText}>
+                Tap on the map to set destination
+              </Text>
+            </View>
+          )}
+        </KeyboardAvoidingView>
       </View>
     </View>
   );
