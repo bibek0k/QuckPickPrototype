@@ -31,7 +31,11 @@ const AppContent = () => {
         barStyle="light-content"
         backgroundColor="#FF6B35"
       />
-      {user ? <AppNavigator /> : <AuthNavigator />}
+      {user ? (
+        user.role === 'driver' ? <DriverNavigator /> : <AppNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
     </NavigationContainer>
   );
 };
