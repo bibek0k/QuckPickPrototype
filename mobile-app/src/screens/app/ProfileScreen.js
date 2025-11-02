@@ -61,13 +61,19 @@ const ProfileScreen = ({navigation}) => {
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('ProfileEdit')}
+          >
             <Icon name="account-edit" size={24} color="#333" />
             <Text style={styles.menuText}>Edit Profile</Text>
             <Icon name="chevron-right" size={24} color="#999" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate('EmergencyContact')}
+          >
             <Icon name="phone" size={24} color="#333" />
             <Text style={styles.menuText}>Emergency Contact</Text>
             <Icon name="chevron-right" size={24} color="#999" />
