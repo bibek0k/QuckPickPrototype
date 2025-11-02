@@ -15,7 +15,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {useAuth} from '../../context/AuthContext';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({navigation}) => {
   const {user, signOut} = useAuth();
 
   const handleSignOut = () => {
