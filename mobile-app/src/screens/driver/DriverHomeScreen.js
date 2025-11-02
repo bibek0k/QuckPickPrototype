@@ -107,7 +107,63 @@ const DriverHomeScreen = () => {
     }
   }, []);
 
-  // Watch position updates
+  // Continuous location tracking for online drivers
+  useEffect(() => {
+    let locationWatchId;
+
+    const startLocationTracking = async () => {
+      const hasPermission = await requestLocationPermission();
+      if (!hasPermission) return;
+
+      if (isOnline) {
+        locationWatchId = Geolocation.watchPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            const newLocation = { latitude, longitude };
+
+            setCurrentLocation(newLocation);
+            setRegion(prev => ({
+              ...prev,
+              latitude,
+              longitude,
+            }));
+
+            // Continuously update driver location to backend when online
+            updateDriverLocation(newLocation);
+          },
+          (error) => console.error('Location tracking error:', error),
+          {
+            enableHighAccuracy: true,
+            distanceFilter: 50, // Update every 50 meters
+            interval: 3000, // Update every 3 seconds when online
+          }
+        );
+      }
+    };
+
+    startLocationTracking();
+
+    return () => {
+      if (locationWatchId) {
+        Geolocation.clearWatch(locationWatchId);
+      }
+    };
+  }, [isOnline]);
+
+  // Update driver location to backend
+  const updateDriverLocation = async (location) => {
+    try {
+      await api.put('/drivers/location', {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        isOnline: true
+      });
+    } catch (error) {
+      console.error('Failed to update driver location:', error);
+    }
+  };
+
+  // Watch position updates (for general UI updates)
   useEffect(() => {
     getCurrentLocation();
 
@@ -129,7 +185,7 @@ const DriverHomeScreen = () => {
           {
             enableHighAccuracy: true,
             distanceFilter: 100, // Update every 100 meters
-            interval: 5000, // Update every 5 seconds
+            interval: 10000, // Update every 10 seconds for UI
           }
         );
       }
