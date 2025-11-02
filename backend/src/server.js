@@ -32,10 +32,10 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/rides', require('./routes/rides'));
-// app.use('/api/deliveries', require('./routes/deliveries'));
-// app.use('/api/drivers', require('./routes/drivers'));
-// app.use('/api/admin', require('./routes/admin'));
+app.use('/api/rides', require('./routes/rides'));
+app.use('/api/deliveries', require('./routes/deliveries'));
+app.use('/api/drivers', require('./routes/drivers'));
+app.use('/api/admin', require('./routes/admin'));
 
 // 404 handler
 app.use((req, res) => {

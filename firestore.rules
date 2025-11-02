@@ -38,7 +38,7 @@ service cloud.firestore {
     match /drivers/{driverId} {
       allow read: if isAuthenticated(); // Any user can see driver profiles
       allow create: if isAuthenticated() && isUser(driverId);
-      allow update: if isUser(driverId) || isAdmin();
+      allow update: if isUser(driverId); // Drivers can update their own profile (except verification status)
       allow delete: if false;
 
       // Only admins can update verification status
@@ -52,7 +52,9 @@ service cloud.firestore {
                      (resource.data.userId == request.auth.uid ||
                       resource.data.driverId == request.auth.uid ||
                       isAdmin());
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                      request.auth.uid == request.resource.data.userId &&
+                      request.resource.data.keys().hasAll(['userId', 'pickup', 'destination', 'vehicleType', 'fare']);
       allow update: if isAuthenticated() &&
                       (resource.data.userId == request.auth.uid ||
                        resource.data.driverId == request.auth.uid ||
@@ -67,7 +69,9 @@ service cloud.firestore {
                       resource.data.receiverId == request.auth.uid ||
                       resource.data.driverId == request.auth.uid ||
                       isAdmin());
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() &&
+                      request.auth.uid == request.resource.data.senderId &&
+                      request.resource.data.keys().hasAll(['senderId', 'pickup', 'destination', 'packageType', 'fare']);
       allow update: if isAuthenticated() &&
                       (resource.data.senderId == request.auth.uid ||
                        resource.data.driverId == request.auth.uid ||
