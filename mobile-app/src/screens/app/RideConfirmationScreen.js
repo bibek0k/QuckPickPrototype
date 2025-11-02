@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../context/AuthContext';
 import VehicleTypeSelector from '../../components/VehicleTypeSelector';
+import api from '../../config/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,63 +26,51 @@ const RideConfirmationScreen = ({ route, navigation }) => {
     xl: { baseFare: 250, distanceFare: 18, timeFare: 4, total: 272 },
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [fareLoading, setFareLoading] = useState(true);
   const [distance, setDistance] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
 
   useEffect(() => {
-    calculateDistanceAndTime();
+    fetchFareEstimates();
   }, [pickup, destination]);
 
-  const calculateDistanceAndTime = () => {
-    // Calculate distance using Haversine formula
-    const R = 6371; // Earth's radius in kilometers
-    const dLat = (destination.latitude - pickup.latitude) * Math.PI / 180;
-    const dLon = (destination.longitude - pickup.longitude) * Math.PI / 180;
-    const a =
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(pickup.latitude * Math.PI / 180) * Math.cos(destination.latitude * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c;
+  const fetchFareEstimates = async () => {
+    try {
+      setFareLoading(true);
 
-    setDistance(Math.round(distance * 10) / 10); // Round to 1 decimal place
+      const response = await api.post('/rides/estimate', {
+        pickup: {
+          latitude: pickup.latitude,
+          longitude: pickup.longitude,
+        },
+        destination: {
+          latitude: destination.latitude,
+          longitude: destination.longitude,
+        }
+      });
 
-    // Estimate time (assuming average speed of 30 km/h in city)
-    const timeMinutes = Math.round((distance / 30) * 60);
-    setEstimatedTime(timeMinutes);
+      if (response.success) {
+        // Transform server response to match expected format
+        const transformedEstimates = {};
+        Object.keys(response.estimates).forEach(vehicleType => {
+          transformedEstimates[vehicleType] = {
+            baseFare: response.estimates[vehicleType].breakdown.base,
+            distanceFare: response.estimates[vehicleType].breakdown.distance,
+            timeFare: response.estimates[vehicleType].breakdown.time,
+            total: response.estimates[vehicleType].fare,
+          };
+        });
 
-    // Update fare estimates based on actual distance
-    updateFareEstimates(distance, timeMinutes);
-  };
-
-  const updateFareEstimates = (distance, time) => {
-    const estimates = {
-      economy: {
-        baseFare: 150,
-        distanceFare: Math.round(distance * 12),
-        timeFare: Math.round(time * 2),
-        total: 0,
-      },
-      comfort: {
-        baseFare: 200,
-        distanceFare: Math.round(distance * 15),
-        timeFare: Math.round(time * 3),
-        total: 0,
-      },
-      xl: {
-        baseFare: 250,
-        distanceFare: Math.round(distance * 18),
-        timeFare: Math.round(time * 4),
-        total: 0,
-      },
-    };
-
-    // Calculate totals
-    Object.keys(estimates).forEach(key => {
-      estimates[key].total = estimates[key].baseFare + estimates[key].distanceFare + estimates[key].timeFare;
-    });
-
-    setFareEstimates(estimates);
+        setFareEstimates(transformedEstimates);
+        setDistance(response.distance);
+        setEstimatedTime(response.duration);
+      }
+    } catch (error) {
+      console.error('Error fetching fare estimates:', error);
+      Alert.alert('Error', 'Unable to calculate fare. Please try again.');
+    } finally {
+      setFareLoading(false);
+    }
   };
 
   const handleConfirmRide = async () => {
@@ -205,24 +194,31 @@ const RideConfirmationScreen = ({ route, navigation }) => {
         {/* Fare Breakdown */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Fare Breakdown</Text>
-          <View style={styles.fareBreakdown}>
-            <View style={styles.fareRow}>
-              <Text style={styles.fareLabel}>Base Fare</Text>
-              <Text style={styles.fareValue}>₹{selectedFare.baseFare}</Text>
+          {fareLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#FF6B35" />
+              <Text style={styles.loadingText}>Calculating fare...</Text>
             </View>
-            <View style={styles.fareRow}>
-              <Text style={styles.fareLabel}>Distance Fare ({distance} km)</Text>
-              <Text style={styles.fareValue}>₹{selectedFare.distanceFare}</Text>
+          ) : (
+            <View style={styles.fareBreakdown}>
+              <View style={styles.fareRow}>
+                <Text style={styles.fareLabel}>Base Fare</Text>
+                <Text style={styles.fareValue}>₹{selectedFare.baseFare}</Text>
+              </View>
+              <View style={styles.fareRow}>
+                <Text style={styles.fareLabel}>Distance Fare ({distance} km)</Text>
+                <Text style={styles.fareValue}>₹{selectedFare.distanceFare}</Text>
+              </View>
+              <View style={styles.fareRow}>
+                <Text style={styles.fareLabel}>Time Fare ({estimatedTime} min)</Text>
+                <Text style={styles.fareValue}>₹{selectedFare.timeFare}</Text>
+              </View>
+              <View style={[styles.fareRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Total Fare</Text>
+                <Text style={styles.totalValue}>₹{selectedFare.total}</Text>
+              </View>
             </View>
-            <View style={styles.fareRow}>
-              <Text style={styles.fareLabel}>Time Fare ({estimatedTime} min)</Text>
-              <Text style={styles.fareValue}>₹{selectedFare.timeFare}</Text>
-            </View>
-            <View style={[styles.fareRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Fare</Text>
-              <Text style={styles.totalValue}>₹{selectedFare.total}</Text>
-            </View>
-          </View>
+          )}
         </View>
 
         {/* Payment Method */}
@@ -478,6 +474,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  loadingText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: '#666666',
   },
 });
 

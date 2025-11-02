@@ -38,12 +38,15 @@ service cloud.firestore {
     match /drivers/{driverId} {
       allow read: if isAuthenticated(); // Any user can see driver profiles
       allow create: if isAuthenticated() && isUser(driverId);
-      allow update: if isUser(driverId); // Drivers can update their own profile (except verification status)
       allow delete: if false;
 
-      // Only admins can update verification status
-      allow update: if isAdmin() &&
-                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verified', 'verificationStatus', 'rejectionReason']);
+      // Single comprehensive update rule:
+      // Drivers can update their own profile but NOT verification fields
+      // Admins can ONLY update verification fields, not other driver data
+      allow update: if (isUser(driverId) &&
+                       !request.resource.data.diff(resource.data).affectedKeys().hasAny(['verified', 'verificationStatus', 'rejectionReason', 'isActive'])) ||
+                      (isAdmin() &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['verified', 'verificationStatus', 'rejectionReason', 'isActive']));
     }
 
     // Rides collection

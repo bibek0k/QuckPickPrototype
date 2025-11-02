@@ -10,6 +10,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeScreen from '../screens/app/HomeScreen';
 import ProfileScreen from '../screens/app/ProfileScreen';
 import TripHistoryScreen from '../screens/app/TripHistoryScreen';
+import RideTrackingScreen from '../screens/app/RideTrackingScreen';
+import DeliveryWizardScreen from '../screens/app/DeliveryWizardScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -19,7 +21,16 @@ const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="Home" component={HomeScreen} />
-      {/* Additional screens will be added in Phase 2 */}
+      <Stack.Screen
+        name="RideTracking"
+        component={RideTrackingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DeliveryWizard"
+        component={DeliveryWizardScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };

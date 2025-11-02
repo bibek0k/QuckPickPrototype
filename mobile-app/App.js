@@ -11,6 +11,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {AuthProvider, useAuth} from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import AuthNavigator from './src/navigation/AuthNavigator';
+import DriverNavigator from './src/navigation/DriverNavigator';
 
 const AppContent = () => {
   const {user, loading} = useAuth();
@@ -30,7 +31,11 @@ const AppContent = () => {
         barStyle="light-content"
         backgroundColor="#FF6B35"
       />
-      {user ? <AppNavigator /> : <AuthNavigator />}
+      {user ? (
+        user.role === 'driver' ? <DriverNavigator /> : <AppNavigator />
+      ) : (
+        <AuthNavigator />
+      )}
     </NavigationContainer>
   );
 };
