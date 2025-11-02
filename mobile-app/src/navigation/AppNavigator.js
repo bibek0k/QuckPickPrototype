@@ -26,6 +26,11 @@ const HomeStack = () => {
         component={RideTrackingScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="DeliveryWizard"
+        component={DeliveryWizardScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
