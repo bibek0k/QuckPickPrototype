@@ -20,7 +20,11 @@ const HomeStack = () => {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
       <Stack.Screen name="Home" component={HomeScreen} />
-      {/* Additional screens will be added in Phase 2 */}
+      <Stack.Screen
+        name="RideTracking"
+        component={RideTrackingScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
