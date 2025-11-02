@@ -526,6 +526,40 @@ router.put('/:id/cancel', authenticate, async (req, res, next) => {
 });
 
 /**
+ * GET /api/rides/my-history
+ * Get user's completed ride history
+ */
+router.get('/my-history', authenticate, async (req, res, next) => {
+  try {
+    const userId = req.user.uid;
+
+    const ridesRef = db.collection('rides');
+    const snapshot = await ridesRef
+      .where('userId', '==', userId)
+      .where('status', 'in', ['completed', 'cancelled'])
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    const rides = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate()
+    }));
+
+    res.status(200).json({
+      success: true,
+      rides
+    });
+  } catch (error) {
+    logger.error('Error fetching ride history:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch ride history'
+    });
+  }
+});
+
+/**
  * Helper function to calculate distance between two coordinates
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
