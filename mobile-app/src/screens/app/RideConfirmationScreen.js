@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAuth } from '../../context/AuthContext';
 import VehicleTypeSelector from '../../components/VehicleTypeSelector';
+import api from '../../config/api';
 
 const { width, height } = Dimensions.get('window');
 
