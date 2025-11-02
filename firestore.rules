@@ -38,7 +38,7 @@ service cloud.firestore {
     match /drivers/{driverId} {
       allow read: if isAuthenticated(); // Any user can see driver profiles
       allow create: if isAuthenticated() && isUser(driverId);
-      allow update: if isUser(driverId) || isAdmin();
+      allow update: if isUser(driverId); // Drivers can update their own profile (except verification status)
       allow delete: if false;
 
       // Only admins can update verification status
