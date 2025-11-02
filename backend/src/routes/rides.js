@@ -560,6 +560,110 @@ router.get('/my-history', authenticate, async (req, res, next) => {
 });
 
 /**
+ * POST /api/rides/estimate
+ * Calculate fare estimate securely on server
+ */
+router.post('/estimate', async (req, res, next) => {
+  try {
+    const { pickup, destination, vehicleType = 'economy' } = req.body;
+
+    // Validate coordinates
+    if (!pickup || !destination ||
+        !pickup.latitude || !pickup.longitude ||
+        !destination.latitude || !destination.longitude) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid coordinates',
+        message: 'Both pickup and destination must have valid latitude and longitude'
+      });
+    }
+
+    // Validate vehicle type
+    const validVehicleTypes = ['economy', 'comfort', 'xl'];
+    if (!validVehicleTypes.includes(vehicleType)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid vehicle type',
+        message: 'Vehicle type must be one of: economy, comfort, xl'
+      });
+    }
+
+    // Calculate distance using Haversine formula
+    const distance = calculateDistance(
+      pickup.latitude, pickup.longitude,
+      destination.latitude, destination.longitude
+    );
+
+    // Base fare calculation by vehicle type (in INR)
+    const baseFares = {
+      economy: { base: 50, perKm: 12, perMinute: 2 },
+      comfort: { base: 75, perKm: 15, perMinute: 3 },
+      xl: { base: 100, perKm: 18, perMinute: 4 }
+    };
+
+    const pricing = baseFares[vehicleType];
+    if (!pricing) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid vehicle type',
+        message: 'Pricing not available for this vehicle type'
+      });
+    }
+
+    // Estimate duration (simplified: average speed = 30 km/h in city)
+    const estimatedMinutes = Math.round((distance / 30) * 60);
+
+    // Calculate total fare
+    const distanceFare = distance * pricing.perKm;
+    const timeFare = estimatedMinutes * pricing.perMinute;
+    const totalFare = pricing.base + distanceFare + timeFare;
+
+    // Apply service fee (15%)
+    const serviceFee = totalFare * 0.15;
+    const finalFare = totalFare + serviceFee;
+
+    // Round to nearest integer
+    const roundedFare = Math.round(finalFare);
+
+    // Generate estimates for all vehicle types for comparison
+    const estimates = {};
+    Object.keys(baseFares).forEach(type => {
+      const typePricing = baseFares[type];
+      const typeDistanceFare = distance * typePricing.perKm;
+      const typeTimeFare = estimatedMinutes * typePricing.perMinute;
+      const typeTotal = typePricing.base + typeDistanceFare + typeTimeFare;
+      const typeService = typeTotal * 0.15;
+      const typeFinal = typeTotal + typeService;
+
+      estimates[type] = {
+        fare: Math.round(typeFinal),
+        distance: Math.round(distance * 100) / 100,
+        duration: estimatedMinutes,
+        breakdown: {
+          base: typePricing.base,
+          distance: Math.round(typeDistanceFare),
+          time: Math.round(typeTimeFare),
+          serviceFee: Math.round(typeService)
+        }
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      estimates,
+      distance: Math.round(distance * 100) / 100,
+      duration: estimatedMinutes
+    });
+  } catch (error) {
+    console.error('Error calculating fare estimate:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to calculate fare estimate'
+    });
+  }
+});
+
+/**
  * Helper function to calculate distance between two coordinates
  */
 function calculateDistance(lat1, lon1, lat2, lon2) {
