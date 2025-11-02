@@ -26,6 +26,7 @@ const RideConfirmationScreen = ({ route, navigation }) => {
     xl: { baseFare: 250, distanceFare: 18, timeFare: 4, total: 272 },
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [fareLoading, setFareLoading] = useState(true);
   const [distance, setDistance] = useState(0);
   const [estimatedTime, setEstimatedTime] = useState(0);
 
