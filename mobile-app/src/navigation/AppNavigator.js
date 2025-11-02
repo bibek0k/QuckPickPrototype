@@ -11,6 +11,7 @@ import HomeScreen from '../screens/app/HomeScreen';
 import ProfileScreen from '../screens/app/ProfileScreen';
 import TripHistoryScreen from '../screens/app/TripHistoryScreen';
 import RideTrackingScreen from '../screens/app/RideTrackingScreen';
+import DeliveryWizardScreen from '../screens/app/DeliveryWizardScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
