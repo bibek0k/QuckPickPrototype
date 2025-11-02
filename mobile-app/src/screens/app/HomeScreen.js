@@ -136,7 +136,18 @@ const HomeScreen = ({navigation}) => {
       });
     } else {
       // Handle delivery booking
-      Alert.alert('Delivery', 'Delivery booking flow coming soon');
+      navigation.navigate('DeliveryWizard', {
+        pickup: {
+          address: pickupLocation,
+          latitude: pickupCoords.latitude,
+          longitude: pickupCoords.longitude,
+        },
+        destination: {
+          address: destinationLocation,
+          latitude: destinationCoords.latitude,
+          longitude: destinationCoords.longitude,
+        },
+      });
     }
   };
 
