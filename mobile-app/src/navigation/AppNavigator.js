@@ -32,6 +32,11 @@ const HomeStack = () => {
         component={DeliveryWizardScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="DriverRegistration"
+        component={DriverRegistrationScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
