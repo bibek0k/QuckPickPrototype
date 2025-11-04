@@ -144,6 +144,31 @@ const DriverHomeScreen = () => {
     };
   }, [getCurrentLocation]);
 
+  // Continuous location updates when online
+  useEffect(() => {
+    let locationUpdateInterval;
+
+    if (isOnline && currentLocation) {
+      // Send location updates every 10 seconds
+      locationUpdateInterval = setInterval(async () => {
+        try {
+          await api.put('/drivers/location', {
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude
+          });
+        } catch (error) {
+          console.error('Error updating location:', error);
+        }
+      }, 10000);
+    }
+
+    return () => {
+      if (locationUpdateInterval) {
+        clearInterval(locationUpdateInterval);
+      }
+    };
+  }, [isOnline, currentLocation]);
+
   // Toggle driver availability
   const toggleAvailability = async () => {
     if (!currentLocation) {

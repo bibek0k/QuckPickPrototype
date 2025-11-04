@@ -77,7 +77,6 @@ const RideConfirmationScreen = ({ route, navigation }) => {
     setIsLoading(true);
 
     try {
-      // This would integrate with the actual API in production
       const rideData = {
         userId: user.uid,
         pickup: {
@@ -95,31 +94,44 @@ const RideConfirmationScreen = ({ route, navigation }) => {
         notes: '',
       };
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Make real API call to create ride
+      const response = await api.post('/rides/create', rideData);
 
-      // Mock successful ride creation
-      Alert.alert(
-        'Ride Confirmed!',
-        'Your ride has been booked successfully. Driver will be assigned shortly.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              navigation.navigate('RideTracking', {
-                rideId: 'mock_ride_id', // This would come from API
-                pickup,
-                destination,
-                vehicleType: selectedVehicle,
-                fare: fareEstimates[selectedVehicle].total,
-              });
+      if (response.success) {
+        Alert.alert(
+          'Ride Confirmed!',
+          'Your ride has been booked successfully. Driver will be assigned shortly.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                navigation.navigate('RideTracking', {
+                  rideId: response.ride.id, // Use real ride ID from backend
+                  pickup,
+                  destination,
+                  vehicleType: selectedVehicle,
+                  fare: fareEstimates[selectedVehicle].total,
+                });
+              },
             },
-          },
-        ]
-      );
+          ]
+        );
+      } else {
+        Alert.alert('Error', response.message || 'Failed to book ride. Please try again.');
+      }
     } catch (error) {
       console.error('Error booking ride:', error);
-      Alert.alert('Error', 'Failed to book ride. Please try again.');
+      let errorMessage = 'Failed to book ride. Please try again.';
+
+      if (error.response) {
+        // Server responded with error status
+        errorMessage = error.response.data?.message || 'Server error occurred';
+      } else if (error.request) {
+        // Network error
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }

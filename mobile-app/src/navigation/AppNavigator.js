@@ -12,6 +12,7 @@ import ProfileScreen from '../screens/app/ProfileScreen';
 import TripHistoryScreen from '../screens/app/TripHistoryScreen';
 import RideTrackingScreen from '../screens/app/RideTrackingScreen';
 import DeliveryWizardScreen from '../screens/app/DeliveryWizardScreen';
+import DriverRegistrationScreen from '../screens/app/DriverRegistrationScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -29,6 +30,11 @@ const HomeStack = () => {
       <Stack.Screen
         name="DeliveryWizard"
         component={DeliveryWizardScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DriverRegistration"
+        component={DriverRegistrationScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
