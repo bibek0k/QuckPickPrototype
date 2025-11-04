@@ -109,7 +109,10 @@ const ProfileScreen = ({navigation}) => {
 
         {user?.role === 'user' && (
           <View style={styles.menuSection}>
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => navigation.navigate('DriverRegistration')}
+            >
               <Icon name="car" size={24} color="#FF6B35" />
               <Text style={styles.menuText}>Become a Driver</Text>
               <Icon name="chevron-right" size={24} color="#999" />
