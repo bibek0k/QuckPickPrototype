@@ -23,7 +23,7 @@ service cloud.firestore {
 
     function isVerifiedDriver() {
       return isDriver() &&
-             get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.verified == true;
+             get(/databases/$(database)/documents/drivers/$(request.auth.uid)).data.verificationStatus == 'approved';
     }
 
     // Users collection
