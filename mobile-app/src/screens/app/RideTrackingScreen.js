@@ -123,23 +123,6 @@ const RideTrackingScreen = ({ route, navigation }) => {
     }
   };
 
-  // Fetch driver location
-  const fetchDriverLocation = async (driverId) => {
-    try {
-      const response = await api.get(`/drivers/${driverId}/location`);
-      const locationData = response.data.location;
-
-      if (locationData) {
-        setDriverLocation({
-          latitude: locationData.latitude,
-          longitude: locationData.longitude,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching driver location:', error);
-    }
-  };
-
   // Start polling ride status
   useEffect(() => {
     fetchRideStatus(); // Initial fetch
