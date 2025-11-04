@@ -205,12 +205,36 @@ router.get('/:id', authenticate, async (req, res, next) => {
       });
     }
 
+    let responseData = {
+      id: rideDoc.id,
+      ...rideData
+    };
+
+    // If ride has assigned driver, fetch driver location and info
+    if (rideData.driverId) {
+      try {
+        const driverDoc = await db.collection('drivers').doc(rideData.driverId).get();
+        if (driverDoc.exists) {
+          const driverData = driverDoc.data();
+          responseData.driver = {
+            id: driverDoc.id,
+            name: driverData.name,
+            phoneNumber: driverData.phoneNumber,
+            vehicleInfo: driverData.vehicleInfo,
+            rating: driverData.rating,
+            totalRides: driverData.totalRides,
+            currentLocation: driverData.currentLocation // This is the key addition
+          };
+        }
+      } catch (driverError) {
+        logger.error('Error fetching driver data:', driverError);
+        // Continue without driver data if fetch fails
+      }
+    }
+
     res.status(200).json({
       success: true,
-      ride: {
-        id: rideDoc.id,
-        ...rideData
-      }
+      ride: responseData
     });
   } catch (error) {
     logger.error('Error getting ride details:', error);
