@@ -108,9 +108,12 @@ const RideTrackingScreen = ({ route, navigation }) => {
           setStatusText('Processing...');
       }
 
-      // If driver is assigned, fetch driver location
-      if (rideData.driver && (rideData.status === 'confirmed' || rideData.status === 'driver_assigned' || rideData.status === 'arriving')) {
-        fetchDriverLocation(rideData.driver.id);
+      // If driver is assigned, use driver location from ride response
+      if (rideData.driver && rideData.driver.currentLocation) {
+        setDriverLocation({
+          latitude: rideData.driver.currentLocation.latitude,
+          longitude: rideData.driver.currentLocation.longitude
+        });
       }
 
       setError(null);
