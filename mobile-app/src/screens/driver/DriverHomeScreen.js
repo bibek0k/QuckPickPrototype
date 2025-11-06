@@ -369,6 +369,70 @@ const DriverHomeScreen = () => {
         )}
       </MapView>
 
+      {/* Job Feed - Only visible when online and has jobs */}
+      {isOnline && pendingJobs.length > 0 && (
+        <View style={styles.jobFeedContainer}>
+          <View style={styles.jobFeedHeader}>
+            <Text style={styles.jobFeedTitle}>Available Jobs</Text>
+            <Text style={styles.jobFeedCount}>{pendingJobs.length} jobs</Text>
+          </View>
+          <ScrollView
+            style={styles.jobScrollView}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
+            {isFetchingJobs && pendingJobs.length === 0 ? (
+              <View style={styles.loadingJobs}>
+                <ActivityIndicator size="small" color="#FF6B35" />
+                <Text style={styles.loadingJobsText}>Finding jobs...</Text>
+              </View>
+            ) : (
+              pendingJobs.map((job) => (
+                <View key={job.id} style={styles.jobCard}>
+                  <View style={styles.jobHeader}>
+                    <View style={[styles.jobTypeBadge, job.type === 'ride' ? styles.rideBadge : styles.deliveryBadge]}>
+                      <Text style={styles.jobTypeText}>
+                        {job.type === 'ride' ? 'RIDE' : 'DELIVERY'}
+                      </Text>
+                    </View>
+                    <View style={styles.jobDistance}>
+                      <Text style={styles.distanceText}>{job.distance} km</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.jobDetails}>
+                    <Text style={styles.jobFrom}>From: {job.pickup.address}</Text>
+                    <Text style={styles.jobTo}>To: {job.destination.address}</Text>
+                    <Text style={styles.jobFare}>₹{job.fare}</Text>
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.acceptButton}
+                    onPress={() => acceptJob(job)}
+                    disabled={isFetchingJobs}
+                  >
+                    {isFetchingJobs ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.acceptButtonText}>Accept</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+
+            {!isFetchingJobs && pendingJobs.length === 0 && (
+              <View style={styles.noJobsContainer}>
+                <Text style={styles.noJobsText}>No jobs available in your area</Text>
+                <Text style={styles.noJobsSubtext}>We're looking for jobs near you...</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Footer with Stats */}
       <View style={styles.footer}>
         <View style={styles.statItem}>
