@@ -125,33 +125,21 @@ const DeliveryWizardScreen = ({ route, navigation }) => {
       setLoading(true);
 
       const deliveryData = {
-        senderId: user.uid,
         pickup: {
           address: pickup.address,
-          coordinates: {
-            latitude: pickup.latitude,
-            longitude: pickup.longitude,
-          },
+          latitude: pickup.latitude,
+          longitude: pickup.longitude,
         },
         destination: {
           address: destination.address,
-          coordinates: {
-            latitude: destination.latitude,
-            longitude: destination.longitude,
-          },
-          contactName: recipientName,
-          contactPhone: recipientPhone,
+          latitude: destination.latitude,
+          longitude: destination.longitude,
         },
-        packageDetails: {
-          type: packageType,
-          recipientName: recipientName,
-          recipientPhone: recipientPhone,
-          specialInstructions: specialInstructions,
-          value: packageValue ? parseFloat(packageValue) : 0,
-        },
+        packageType: packageType.toLowerCase(),
         fare: deliveryFee,
-        distance: estimatedTime / 2, // Rough distance estimate
-        estimatedTime: estimatedTime,
+        recipientName: recipientName,
+        recipientPhone: recipientPhone.startsWith('+') ? recipientPhone : `+91${recipientPhone}`,
+        notes: specialInstructions,
       };
 
       // Create delivery via API
@@ -164,7 +152,7 @@ const DeliveryWizardScreen = ({ route, navigation }) => {
           {
             text: 'Track Delivery',
             onPress: () => navigation.navigate('DeliveryTracking', {
-              deliveryId: response.id || 'mock_delivery_id'
+              deliveryId: response.delivery?.id || 'mock_delivery_id'
             })
           },
           {
