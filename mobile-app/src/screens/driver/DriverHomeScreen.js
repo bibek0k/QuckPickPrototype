@@ -13,7 +13,9 @@ import {
   PermissionsAndroid,
   Platform,
   ActivityIndicator,
-  Linking
+  Linking,
+  ScrollView,
+  RefreshControl
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
