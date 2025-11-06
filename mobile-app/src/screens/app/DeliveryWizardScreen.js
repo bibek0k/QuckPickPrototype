@@ -49,35 +49,35 @@ const DeliveryWizardScreen = ({ route, navigation }) => {
   // Package types
   const packageTypes = ['Document', 'Food', 'Parcel', 'Clothing', 'Electronics', 'Other'];
 
-  // Calculate delivery fee on mount
+  // Calculate delivery fare on mount
   useEffect(() => {
-    calculateDeliveryFee();
+    fetchDeliveryEstimate();
   }, [pickup, destination]);
 
-  const calculateDeliveryFee = async () => {
+  const fetchDeliveryEstimate = async () => {
+    if (!pickup || !destination) return;
+
     try {
-      // Simple distance calculation using Haversine formula
-      const R = 3959; // Earth's radius in miles
-      const dLat = (destination.latitude - pickup.latitude) * Math.PI / 180;
-      const dLon = (destination.longitude - pickup.longitude) * Math.PI / 180;
-      const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(pickup.latitude * Math.PI / 180) * Math.cos(destination.latitude * Math.PI / 180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      const distance = R * c;
-      const distanceKm = distance * 1.60934; // Convert to km
+      const response = await api.post('/deliveries/estimate', {
+        pickup: {
+          latitude: pickup.latitude,
+          longitude: pickup.longitude,
+          address: pickup.address
+        },
+        destination: {
+          latitude: destination.latitude,
+          longitude: destination.longitude,
+          address: destination.address
+        },
+        packageType: packageType.toLowerCase()
+      });
 
-      // Simple fare calculation (in production, this would be server-side)
-      const baseFare = 50;
-      const distanceFare = Math.round(distanceKm * 15);
-      const timeFare = Math.round(distanceKm * 5); // Assuming 30 km/h average
-      const totalFare = baseFare + distanceFare + timeFare;
-
-      setDeliveryFee(totalFare);
-      setEstimatedTime(Math.round(distanceKm * 2)); // Rough time estimate in minutes
+      if (response.success && response.estimate) {
+        setDeliveryFee(response.estimate.fare);
+        setEstimatedTime(response.estimate.duration);
+      }
     } catch (error) {
-      console.error('Error calculating fee:', error);
+      console.error('Error fetching delivery estimate:', error);
       setDeliveryFee(100); // Default fare
       setEstimatedTime(30); // Default time
     }
