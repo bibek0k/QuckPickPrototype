@@ -34,6 +34,11 @@ const HomeStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="DeliveryTracking"
+        component={DeliveryTrackingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="DriverRegistration"
         component={DriverRegistrationScreen}
         options={{ headerShown: false }}
