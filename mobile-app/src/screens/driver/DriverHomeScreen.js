@@ -559,6 +559,144 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  // Job Feed Styles
+  jobFeedContainer: {
+    position: 'absolute',
+    bottom: 160, // Above footer
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    maxHeight: 300,
+  },
+  jobFeedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  jobFeedTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  jobFeedCount: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  jobScrollView: {
+    maxHeight: 220,
+  },
+  jobCard: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  jobHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  jobTypeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  rideBadge: {
+    backgroundColor: '#4CAF50',
+  },
+  deliveryBadge: {
+    backgroundColor: '#FF6B35',
+  },
+  jobTypeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  jobDistance: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  distanceText: {
+    fontSize: 12,
+    color: '#333333',
+    fontWeight: '600',
+  },
+  jobDetails: {
+    marginBottom: 8,
+  },
+  jobFrom: {
+    fontSize: 14,
+    color: '#333333',
+    marginBottom: 4,
+  },
+  jobTo: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 4,
+  },
+  jobFare: {
+    fontSize: 16,
+    color: '#FF6B35',
+    fontWeight: 'bold',
+  },
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  acceptButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  loadingJobs: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  loadingJobsText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666666',
+  },
+  noJobsContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noJobsText: {
+    fontSize: 16,
+    color: '#333333',
+    marginBottom: 4,
+  },
+  noJobsSubtext: {
+    fontSize: 14,
+    color: '#666666',
+  },
 });
 
 export default DriverHomeScreen;
