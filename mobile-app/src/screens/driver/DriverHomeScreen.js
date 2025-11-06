@@ -175,6 +175,112 @@ const DriverHomeScreen = () => {
     };
   }, [isOnline, currentLocation]);
 
+  // Fetch pending jobs when online
+  useEffect(() => {
+    if (isOnline && currentLocation) {
+      // Fetch jobs immediately when going online
+      fetchPendingJobs();
+
+      // Set up interval to fetch jobs every 10 seconds
+      const interval = setInterval(() => {
+        fetchPendingJobs();
+      }, 10000);
+
+      setJobFetchInterval(interval);
+    } else {
+      // Clear interval when going offline
+      if (jobFetchInterval) {
+        clearInterval(jobFetchInterval);
+        setJobFetchInterval(null);
+      }
+      setPendingJobs([]);
+    }
+
+    return () => {
+      if (jobFetchInterval) {
+        clearInterval(jobFetchInterval);
+      }
+    };
+  }, [isOnline, currentLocation]);
+
+  // Fetch pending jobs function
+  const fetchPendingJobs = async () => {
+    if (!isOnline || !currentLocation) return;
+
+    try {
+      setIsFetchingJobs(true);
+      const response = await api.get('/drivers/pending-jobs');
+
+      if (response.success) {
+        setPendingJobs(response.jobs || []);
+      }
+    } catch (error) {
+      console.error('Error fetching pending jobs:', error);
+      // Don't show alert for continuous fetching errors
+    } finally {
+      setIsFetchingJobs(false);
+    }
+  };
+
+  // Accept job function
+  const acceptJob = async (job) => {
+    try {
+      // Stop job fetching while accepting
+      if (jobFetchInterval) {
+        clearInterval(jobFetchInterval);
+        setJobFetchInterval(null);
+      }
+
+      let response;
+      if (job.type === 'ride') {
+        response = await api.put(`/rides/${job.id}/accept`);
+      } else if (job.type === 'delivery') {
+        response = await api.put(`/deliveries/${job.id}/accept`);
+      }
+
+      if (response.success) {
+        Alert.alert(
+          'Job Accepted!',
+          `You have accepted the ${job.type}. Navigate to your active job screen.`,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // For now, just show success alert
+                // In a real app, navigate to active job screen
+                setPendingJobs([]); // Clear accepted job from list
+              },
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error accepting job:', error);
+      Alert.alert(
+        'Error',
+        'Failed to accept job. Please try again.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Resume job fetching after error
+              if (isOnline) {
+                fetchPendingJobs();
+              }
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  // Pull to refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPendingJobs();
+    setRefreshing(false);
+  };
+
   // Toggle driver availability
   const toggleAvailability = async () => {
     if (!currentLocation) {
