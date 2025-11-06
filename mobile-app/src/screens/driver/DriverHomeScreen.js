@@ -28,6 +28,10 @@ const DriverHomeScreen = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [toggleLoading, setToggleLoading] = useState(false);
+  const [pendingJobs, setPendingJobs] = useState([]);
+  const [isFetchingJobs, setIsFetchingJobs] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [jobFetchInterval, setJobFetchInterval] = useState(null);
   const [region, setRegion] = useState({
     latitude: 37.78825,
     longitude: -122.4324,
